@@ -12,12 +12,12 @@ def train_step(model:torch.nn.Module,
         X,y=X.to(device), y.to(device)
         y_pred=model(X)
         loss=loss_fn(y_pred,y)
-        train_loss += loss.item
+        train_loss += loss.item()
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         y_pred_class=torch.argmax(torch.softmax(y_pred,dim=1),dim=1)
-        train_acc +=(y_pred==y).sum().item()/len(y_pred)
+        train_acc += (y_pred_class==y).sum().item()/len(y_pred)
     train_loss=train_loss/len(dataloader)
     train_acc=train_acc/len(dataloader)
     return train_loss , train_acc
@@ -27,7 +27,7 @@ def test_step(model:torch.nn.Module,
                dataloader:torch.utils.data.DataLoader,
                loss_fn:torch.nn.Module):
     model.eval()
-    test_loss , test_acc  =0
+    test_loss , test_acc  =0 , 0
     with torch.inference_mode():
             for batch , (X,y) in enumerate(dataloader):
                 X,y=X.to(device) ,y.to(device)
@@ -44,7 +44,7 @@ def test_step(model:torch.nn.Module,
 def train (model : torch.nn.Module,
            optimizer:torch.optim.Optimizer,
            test_dataloader: torch.utils.data.DataLoader,
-           train_dataloader: torch.utild.data.DataLoaer,
+           train_dataloader: torch.utils.data.DataLoader,
            loss_fn:torch.nn.Module,
            epochs:int,
            device:torch.device
@@ -54,14 +54,14 @@ def train (model : torch.nn.Module,
     "test_loss": [],
     "test_acc": []
     }
-    for epoch in tqdm(range(epoch)):
+    for epoch in tqdm(range(epochs)):
         train_loss,train_acc=train_step(model=model,optimizer=optimizer,dataloader=train_dataloader,loss_fn=loss_fn,device=device)
         test_loss,test_acc=test_step(model=model,dataloader=test_dataloader,loss_fn=loss_fn,device=device)
         print(f"epoch:{epoch} | "
                 f"train acc: {train_acc:.4f} |"
                 f"train_loss:{train_loss:.4f}|"
-                f"train acc: {test_acc:.4f} |"
-                f"train_loss:{test_loss:.4f}")
+                f"test_acc: {test_acc:.4f} |"
+                f"test_loss:{test_loss:.4f}")
         results["train_loss"].append(train_loss)
         results["train_acc"].append(train_acc)
         results["test_loss"].append(test_loss)
